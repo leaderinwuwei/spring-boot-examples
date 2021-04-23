@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.neo.demo.mapper.TableNameDemoMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.neo.demo.entity.TableNameDemo">
+        <id column="column_1" property="column1" />
+        <result column="column_2" property="column2" />
+        <result column="column_3" property="column3" />
+        <result column="column_4" property="column4" />
+        <result column="column_5" property="column5" />
+        <result column="column_6" property="column6" />
+        <result column="column_7" property="column7" />
+        <result column="column_8" property="column8" />
+        <result column="column_9" property="column9" />
+        <result column="column_10" property="column10" />
+        <result column="column_11" property="column11" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        column_1, column_2, column_3, column_4, column_5, column_6, column_7, column_8, column_9, column_10, column_11
+    </sql>
+
+</mapper>

@@ -1,102 +1,92 @@
 package com.neo;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.neo.mapper.UserMapper;
-import com.neo.model.User;
-import org.junit.Assert;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.neo.demo.entity.TableNameDemo;
+import com.neo.demo.mapper.TableNameDemoMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.test.context.junit4.SpringRunner;
+import javax.annotation.Resource;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Random;
+import java.util.UUID;
+import java.util.concurrent.*;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class MyBatisPlusTest {
 
-    @Autowired
-    private UserMapper userMapper;
+    @Resource
+    private TableNameDemoMapper TableNameDemoMapper;
 
 
     @Test
     public void testSelectOne() {
-        User user = userMapper.selectById(1L);
-        System.out.println(user);
+        TableNameDemo TableNameDemo = TableNameDemoMapper.selectById(1L);
+        System.out.println(TableNameDemo);
     }
 
     @Test
-    public void testInsert() {
-        User user = new User();
-        user.setName("微笑");
-        user.setAge(3);
-        user.setEmail("neo@tooool.org");
-        assertThat(userMapper.insert(user)).isGreaterThan(0);
-        // 成功直接拿会写的 ID
-        assertThat(user.getId()).isNotNull();
-    }
+    public void testInsert() throws InterruptedException, IOException {
+        int numbers = 8000000;
+        CountDownLatch  countDownLatch = new CountDownLatch(numbers);
+        ThreadPoolExecutor  executor = new ThreadPoolExecutor(12,Integer.MAX_VALUE,3000, TimeUnit.SECONDS,new ArrayBlockingQueue<>(8000000),new ThreadPoolTaskExecutor());
 
-    @Test
-    public void testDelete() {
-        assertThat(userMapper.deleteById(3L)).isGreaterThan(0);
-        assertThat(userMapper.delete(new QueryWrapper<User>()
-                .lambda().eq(User::getName, "smile"))).isGreaterThan(0);
-    }
-
-    @Test
-    public void testUpdate() {
-        User user = userMapper.selectById(2);
-        assertThat(user.getAge()).isEqualTo(36);
-        assertThat(user.getName()).isEqualTo("keep");
-
-        userMapper.update(
-                null,
-                Wrappers.<User>lambdaUpdate().set(User::getEmail, "123@123").eq(User::getId, 2)
-        );
-        assertThat(userMapper.selectById(2).getEmail()).isEqualTo("123@123");
-    }
-
-    @Test
-    public void testSelect() {
-        List<User> userList = userMapper.selectList(null);
-        Assert.assertEquals(5, userList.size());
-        userList.forEach(System.out::println);
-    }
-
-    @Test
-    public void testSelectCondition() {
-        QueryWrapper<User> wrapper = new QueryWrapper<>();
-        wrapper.select("max(id) as id");
-        List<User> userList = userMapper.selectList(wrapper);
-        userList.forEach(System.out::println);
-    }
-
-    @Test
-    public void testPage() {
-        System.out.println("----- baseMapper 自带分页 ------");
-        Page<User> page = new Page<>(1, 2);
-        IPage<User> userIPage = userMapper.selectPage(page, new QueryWrapper<User>()
-                .gt("age", 6));
-        assertThat(page).isSameAs(userIPage);
-        System.out.println("总条数 ------> " + userIPage.getTotal());
-        System.out.println("当前页数 ------> " + userIPage.getCurrent());
-        System.out.println("当前每页显示数 ------> " + userIPage.getSize());
-        print(userIPage.getRecords());
-        System.out.println("----- baseMapper 自带分页 ------");
-    }
-
-    private <T> void print(List<T> list) {
-        if (!CollectionUtils.isEmpty(list)) {
-            list.forEach(System.out::println);
+        while (numbers-->0){
+            executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    insertRandomInfo();
+                    countDownLatch.countDown();
+                }
+            });
+            System.out.println(numbers);
         }
+        countDownLatch.await();
+            System.out.println("OVER");
     }
+
+    @Test
+    public void testSelect() throws InterruptedException, IOException {
+        int numbers = 8000;
+        CountDownLatch  countDownLatch = new CountDownLatch(numbers);
+        ThreadPoolExecutor  executor = new ThreadPoolExecutor(20,Integer.MAX_VALUE,3000, TimeUnit.SECONDS,new ArrayBlockingQueue<>(8000000),new ThreadPoolTaskExecutor());
+
+        while (numbers-->0){
+            executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    System.out.println(selectInfo().toString());
+                    countDownLatch.countDown();
+                }
+            });
+            System.out.println(numbers);
+        }
+        countDownLatch.await();
+        System.out.println("OVER");
+    }
+
+    private void insertRandomInfo(){
+        TableNameDemo tableNameDemo = new TableNameDemo();
+        Integer a = UUID.randomUUID().hashCode();
+        tableNameDemo.setColumn2(a).setColumn3(a).setColumn4(a).setColumn5(a).setColumn6(a).setColumn7(a).setColumn8(a).setColumn9(a).setColumn10(a).setColumn11(a);
+        TableNameDemoMapper.insert(tableNameDemo);
+    }
+
+    private TableNameDemo selectInfo(){
+        List<TableNameDemo> tableNameDemos = TableNameDemoMapper.selectList(new LambdaQueryWrapper<TableNameDemo>().orderBy(true,true,TableNameDemo::getColumn6).last("limit "+ new Random().nextInt(100)));
+        return tableNameDemos.get(0);
+    }
+
+
+
+
 
 
 }
